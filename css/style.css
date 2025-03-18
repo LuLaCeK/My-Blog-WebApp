@@ -1,0 +1,130 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f7f6;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #2c3e50;
+}
+.container {
+    max-width: 800px;
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.1);
+    text-align: left;
+    margin: 40px 0;
+}
+h1 {
+    background-color: #3498db;
+    color: white;
+    padding: 20px;
+    border-radius: 12px 12px 0 0;
+    margin: -30px -30px 20px -30px;
+    font-size: 28px;
+    font-weight: 600;
+}
+h2 {
+    color: #3498db;
+    font-size: 24px;
+    margin-top: 30px;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+h3 {
+    color: #2c3e50;
+    font-size: 20px;
+    margin-top: 25px;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+ol, ul {
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+ol li, ul li {
+    margin-bottom: 10px;
+    line-height: 1.6;
+}
+p {
+    font-size: 16px;
+    color: #34495e;
+    line-height: 1.8;
+    margin: 0 0 20px 0;
+}
+pre {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    overflow-x: auto;
+    border: 1px solid #e0e0e0;
+}
+code {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
+    color: #e74c3c;
+}
+img {
+    width: 100%;
+    border-radius: 8px;
+    margin: 20px 0;
+    border: 1px solid #e0e0e0;
+    cursor: pointer;
+}
+.note {
+    background-color: #ecf0f1;
+    padding: 15px;
+    border-left: 4px solid #3498db;
+    margin: 20px 0;
+    border-radius: 4px;
+}
+.note p {
+    margin: 0;
+    color: #2c3e50;
+}
+a {
+    color: #3498db;
+    text-decoration: none;
+    font-weight: 500;
+}
+a:hover {
+    text-decoration: underline;
+}
+/* Modal styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    padding-top: 60px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.9);
+}
+.modal-content {
+    margin: auto;
+    display: block;
+    max-width: 80%;
+    max-height: 80%;
+    width: auto;
+    height: auto
+}
+.close {
+    position: absolute;
+    top: 20px;
+    right: 35px;
+    color: #fff;
+    font-size: 40px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+.close:hover,
+.close:focus {
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
+}
