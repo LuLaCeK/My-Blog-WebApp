@@ -1,0 +1,48 @@
+/* Mobile Styles */
+@media (max-width: 768px) {
+    body {
+        font-size: 14px; /* Smaller font size for mobile */
+    }
+
+    .container {
+        width: 100%; /* Full width on mobile */
+        padding: 10px; /* Less padding on mobile */
+    }
+
+    h1 {
+        font-size: 24px; /* Smaller heading size */
+    }
+
+    h2 {
+        font-size: 20px;
+    }
+
+    h3 {
+        font-size: 18px;
+    }
+
+    pre {
+        font-size: 12px; /* Smaller code font size */
+        padding: 8px;
+    }
+
+    img {
+        margin: 5px 0; /* Less margin for images */
+    }
+
+    /* Adjust code blocks for small screens */
+    pre code {
+        white-space: pre-wrap; /* Wrap long lines of code */
+        word-wrap: break-word;
+    }
+
+    /* Modal adjustments for mobile */
+    .modal-content {
+        width: 100%; /* Full width for modal images */
+        max-width: 100%;
+    }
+
+    .close {
+        font-size: 24px; /* Larger close button for mobile */
+    }
+}
