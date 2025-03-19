@@ -23,15 +23,16 @@
 <body>
     <main class="container">
         <h1>Forced Tunneling for Site-to-Site Configurations (Default Site)</h1>
-        <p>By default, Azure routes outbound traffic directly via its gateways. But what if you need to ensure that all internet-bound traffic is inspected and filtered by on-premises security devices? Or what if your company’s security policies require routing traffic through a centralized point? In such cases, configuring forced tunneling becomes essential.</p>
-        <p>Enough with the boring stuff. Let's dive into the problem and get it done.</p>
+        <p>By default, Azure routes outbound traffic directly via its gateways. But what if you need to ensure that all internet-bound traffic is inspected and filtered by on-premises security devices? 
+            Or what if your company’s security policies require routing traffic through a centralized point? In such cases, configuring forced tunneling becomes essential.</p>
+        <p>Let's dive into the details and walk through the configuration process step by step.</p>
 
-        <h2>On-prem Setup</h2>
+        <h2>On-premises Setup</h2>
         <ol>
             <li>PowerShell in version 7.4.5 with Azure PowerShell module in version 12.3.0</li>
             <li>Mikrotik hAP ac³ in version 7.9 (stable) - Initiator
                 <ol>
-                    <li>On-prem Networks:
+                    <li>On-premises Networks:
                         <ul>
                             <li>192.168.1.1/32</li>
                             <li>192.168.88.0/24</li>
@@ -46,16 +47,16 @@
             </li>
         </ol>
 
-        <h2>On the Azure Side</h2>
-        <p>We will create:</p>
+        <h2>Azure Setup</h2>
+        <p>On the Azure side, we’ll create the following components to establish the VPN connection:</p>
         <ol>
-            <li>Virtual Network (10.100.0.0/16)</li>
-            <li>Local Network Gateway</li>
-            <li>Virtual Network Gateway</li>
-            <li>VPN Connection with Custom IPSec policy - ResponderOnly</li>
+            <li><strong>Virtual Network:</strong> With the address space (10.100.0.0/16)</li>
+            <li><strong>Local Network Gateway:</strong> Represents the on-premises VPN device in Azure.</li>
+            <li><strong>Virtual Network Gateway:</strong>  Acts as the VPN gateway for the Azure virtual network.</li>
+            <li><strong>VPN Connection:</strong> Configured with a custom IPSec policy in ResponderOnly </li>
         </ol>
         <h3>1. Create Tags for All Resources</h3>
-        <p>Create tags for better cost tracking:</p>
+        <p>To improve cost tracking and resource management, we’ll start by creating tags for all Azure resources. Use the following PowerShell script::</p>
         <pre><code class="language-powershell">
 $Tags = @{
     Location    = "EU-West"
@@ -65,7 +66,8 @@ $Tags = @{
         </code></pre>
         <img src="images/1.png" alt="Azure PowerShell script for creating tags" class="modal-image" loading="lazy">
         <h3>2. Create a Resource Group</h3>
-        <p>Every single resource in Azure must reside within a Resource Group. A Resource Group is a logical unit/container storing metadata for resources. Let's create one:</p>
+        <p>Every single resource in Azure must reside within Resource group. Resource group is some logical unit/container storing metadata for resources. Azure resources and resource group can be in different region. I'm using EU-West region. Let's create one:
+            :</p>
         <pre><code class="language-powershell">
 $RGName        = 'mlb-rg-test-euw-01'
 $RGLocation    = 'westeurope'
@@ -74,7 +76,7 @@ New-AzResourceGroup -Name $RGName -Location $RGLocation -Tag ($tags + @{"Resourc
         </code></pre>
         <img src="images/2.png" alt="Azure PowerShell - create Resource group" class="modal-image" loading="lazy">
         <h3>3. Create Network Security Groups (NSGs)</h3>
-        <p>Create NSGs to control network access. For simplicity, I will leave NSGs with default inbound and outbound settings:</p>
+        <p>Create Network Security Groups (NSGs) to control network access. Not strictly necessary, but I’ll create them for demonstration. For simplicity, I will leave NSGs with default inbound and outbound settings:</p>
         <pre><code class="language-powershell">
 $NSGName1      = 'mlb-nsg-test-euw-01'
 $NSGName2      = 'mlb-nsg-test-euw-02'
@@ -83,7 +85,19 @@ $NSGSubnet2 = New-AzNetworkSecurityGroup -ResourceGroupName $RGName -Location $R
         </code></pre>
             <img src="images/3.png" alt="Azure PowerShell - create Network Security Group (NSG)" class="modal-image" loading="lazy">
         <h3>4. Prepare Subnets for the Azure VNet</h3>
-        <p>Create subnets and associate the created Network Security Groups. The GatewaySubnet must be named exactly 'GatewaySubnet':</p>
+        <p>Next, we’ll prepare the subnets for the Azure Virtual Network (VNet) and associate the previously created Network Security Groups (NSGs). Note that NSGs <strong>cannot</strong> be attached to the Gateway subnet, as this would block essential traffic required for the VPN Gateway to function.</p>
+        <p>For the VNet, we’ll use the address space <code>10.100.0.0/16</code> (which we’ll define in the next step). Within this address space, we’ll create the following subnets:</p>
+<ul>
+    <li><strong>Subnet 1:</strong> <code>10.100.9.0/24</code></li>
+    <li><strong>Subnet 2:</strong> <code>10.100.10.0/24</code></li>
+    <li><strong>GatewaySubnet:</strong> <code>10.100.1.0/24</code></li>
+    </ul>
+    <p>The GatewaySubnet requires special attention. While the smallest supported prefix is <code>/27</code> (providing 32 IP addresses), the Azure VPN Gateway needs at least 8 IP addresses to operate. For better scalability, I’ve chosen a <code>/24</code> prefix, which provides 256 IP addresses.</p>
+    <p><strong>Important Considerations:</strong></p>
+    <ul>
+    <li>Ensure that the IP address ranges in Azure do <strong>not overlap</strong> with the IP addresses in your on-premises network. For example, if both networks use <code>10.100.0.0/16</code>, routing issues will occur when the Site-to-Site VPN is established. Plan your subnets carefully to avoid conflicts.</li>
+    <li>The GatewaySubnet must be named <strong>exactly</strong> <code>GatewaySubnet</code> (case-insensitive). Azure uses this name to identify the subnet where the VPN Gateway will be deployed.</li>
+    </ul>
         <pre><code class="language-powershell">
 $SubnetName1      = 'mlb-snet-test-euw-01'
 $SubnetName1AddressPrefix = '10.100.9.0/24'
@@ -97,7 +111,17 @@ $GWSubnet = New-AzVirtualNetworkSubnetConfig -Name $GatewaySubnetName -AddressPr
         </code></pre>
         <img src="images/4.png" alt="Azure Powrshell - Config subnets for Vnet" class="modal-image" loading="lazy">
         <h3>5. Create Virtual Network</h3>
-        <p>Create a VNet with the address space 10.100.0.0/16:</p>
+        <p>In this step, we’ll create the Virtual Network (VNet) in Azure. The VNet will use the address space <code>10.100.0.0/16</code>, which must include all the subnets created in the previous step:</p>
+        <ul>
+    <li><code>10.100.9.0/24</code></li>
+    <li><code>10.100.10.0/24</code></li>
+    <li><code>10.100.1.0/24</code> (GatewaySubnet)</li>
+</ul>
+<p><strong>Important Considerations:</strong></p>
+<ul>
+    <li>The VNet’s address space <strong>must not overlap</strong> with your on-premises network. For example, if your on-premises network uses <code>10.100.0.0/16</code>, you’ll need to choose a different address space for the Azure VNet to avoid routing conflicts.</li>
+    <li>Ensure that the subnets created earlier fall within the VNet’s address space. This is critical for proper network communication and VPN connectivity.</li>
+</ul>
         <pre><code class="language-powershell">
 $VNETName      = 'mlb-vnet-test-euw-01'
 $VNETAddressPrefix = '10.100.0.0/16'
@@ -105,7 +129,12 @@ $VNET = New-AzVirtualNetwork -Name $VNETName -ResourceGroupName $RGName -Locatio
         </code></pre>
         <img src="images/5.png" alt="Azure Powershell - Create Virtual Network (Vnet)" class="modal-image" loading="lazy">
         <h3>6. Create Local Network Gateway (LNGW)</h3>
-        <p>The LNGW represents your on-prem VPN device in Azure:</p>
+        <p>To establish a Site-to-Site VPN connection, we need to create a <strong>Local Network Gateway (LNGW)</strong> in Azure. The LNGW represents your on-premises VPN device (in this case, a MikroTik router) within Azure.</p>
+        <p>There are two mandatory parameters for configuring the LNGW:</p>
+<ol>
+    <li><strong>Endpoint:</strong> This is the public IP address or Fully Qualified Domain Name (FQDN) of your on-premises VPN device. Azure uses this endpoint to establish communication with your on-premises network.</li>
+    <li><strong>Address Prefixes:</strong> These are the IP address ranges of your on-premises network. Azure uses these prefixes to determine which traffic should be routed through the Site-to-Site VPN connection.</li>
+</ol>
         <pre><code class="language-powershell">
 $LNGWName        = 'mlb-lngw-test-euw-hq-01'
 $LNGWFQDM        = 'vpn.My-Lab.cloud'
@@ -122,7 +151,9 @@ $LNGW = New-AzLocalNetworkGateway -Name $LNGWName -ResourceGroupName $RGName -Lo
         </code></pre>
         <img src="images/6.png" alt="Azure Powershell - Create Local Network Gateway (LNG)" class="modal-image" loading="lazy">
         <h3>7. Create Public IP Address (PIP)</h3>
-        <p>Create a standard SKU Public IP address for the VPN Gateway:</p>
+        <p>To establish a connection between Azure and your on-premises network, we need a <strong>Public IP address (PIP)</strong>. This address must be routable on the internet, allowing communication between your on-premises network and Azure, and vice versa.</p>
+        <p>In the next step, we’ll create a <strong>Virtual Network Gateway (VNGW)</strong> with a <strong>Standard SKU</strong>. To ensure compatibility, the Public IP address must also use the <strong>Standard SKU</strong>. </p>
+        <p>Ensure the <strong>Public IP address</strong> and the <strong>Virtual Network Gateway</strong> use the <strong>same SKU</strong> (Standard) to avoid compatibility issues:</p>
         <pre><code class="language-powershell">
 $PIPName         = 'mlb-pip-test-euw-01'
 $IPAllocation    = 'Static'
@@ -130,7 +161,15 @@ $VNGWPIP = New-AzPublicIpAddress -Name $PIPName -ResourceGroupName $RGName -Loca
         </code></pre>
         <img src="images/7.png" alt="Azure Powershell - Create Public IP (PIP)" class="modal-image" loading="lazy">
         <h3>8. Create Virtual Network Gateway (VNGW)</h3>
-        <p>Create the VPN Gateway with the specified parameters:</p>
+        <p>With all the prerequisites in place, we can now proceed to create the <strong>Virtual Network Gateway (VNGW)</strong>. The VNGW is an Azure resource that acts as the entry point for network traffic, enabling connectivity between your Azure Virtual Network (VNet) and other networks.</p>
+<p>When creating the VNGW, several key parameters must be configured:</p>
+<ol>
+    <li><strong>VPN SKU:</strong> Choose the SKU based on your network throughput/performance.</li>
+    <li><strong>Generation:</strong> This determines the underlying hardware and features available.</li>
+    <li><strong>Active-Active Mode:</strong> If high availability is required. This configuration requires two public IP addresses.</li>
+    <li><strong>VPN Type:</strong><code>RouteBased</code> (dynamic routing) or <code>PolicyBased</code> (static routing).</li>
+</ol>
+
         <pre><code class="language-powershell">
 $VNGWName        = 'mlb-vngw-test-euw-hq-01'
 $VNGWSKU         = 'VpnGw1'
@@ -144,7 +183,34 @@ $VNGW = New-AzVirtualNetworkGateway -Name $VNGWName -ResourceGroupName $RGName -
         </code></pre>
         <img src="images/8.png" alt="Azure Powershell - Create Virtual Network Gateway (VNGW)" class="modal-image" loading="lazy">
         <h3>9. Configure IPSec Policy</h3>
-        <p>Configure the encryption and hashing algorithms for Phase 1 and Phase 2:</p>
+        <p>Once the Virtual Network Gateway (VNGW) is deployed, we can configure the <strong>IPSec policy</strong> for the VPN connection. While Azure provides default settings (which you can find <a href="https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-about-vpn-devices#devicetable" target="_blank" rel="noopener noreferrer">here</a>), it’s important to verify that your on-premises VPN device supports the chosen encryption and hashing algorithms. For this demonstration, I’ll customize the policy to meet specific requirements.</p>
+<p>IPSec operates in two phases:</p>
+<ol>
+    <li><strong>Phase 1: Key Exchange (IKE - Internet Key Exchange)</strong>
+        <ul>
+            <li>This phase establishes a secure and authenticated channel between the Azure VPN Gateway and the on-premises VPN device.</li>
+            <li>It uses mutual authentication, typically through a pre-shared key or certificates.</li>
+        </ul>
+    </li>
+    <li><strong>Phase 2: IPSec</strong>
+        <ul>
+            <li>This phase handles the encryption of data transmitted between the two endpoints.</li>
+            <li>It ensures that all traffic passing through the VPN tunnel is secure and private.</li>
+        </ul>
+    </li>
+</ol>
+<p>For this setup, I'll configure the following parameters:</p>
+<ul>
+    <li><strong>IKE Encryption:</strong> <code>AES256</code></li>
+    <li><strong>IKE Integrity:</strong> <code>SHA256</code></li>
+    <li><strong>DH Group:</strong> <code>DHGroup2048</code></li>
+    <li><strong>IPSec Encryption:</strong> <code>AES256</code></li>
+    <li><strong>IPSec Integrity:</strong> <code>SHA256</code></li>
+    <li><strong>PFS Group:</strong> <code>PFS24</code></li>
+    <li><strong>SA Lifetime:</strong> <code>3600 seconds</code></li>
+    <li><strong>SA Data Size:</strong> <code>512000 KB</code></li>
+</ul>
+<p>Let's create a custom IPSec policy:</p>
         <pre><code class="language-powershell">
 $IkeEncryption        = 'AES256'
 $IkeIntegrity         = 'SHA256'
@@ -158,7 +224,9 @@ $IPSecPolicy = New-AzIpsecPolicy -IkeEncryption $IkeEncryption -IkeIntegrity $Ik
         </code></pre>
         <img src="images/9.png" alt="Azure Powershell - Create IPSec policy" class="modal-image" loading="lazy">
         <h3>10. Create VPN Connection</h3>
-        <p>Create the VPN connection in responder mode:</p>
+        <p>With both the <strong>Local Network Gateway (LNGW)</strong> and <strong>Virtual Network Gateway (VNGW)</strong> provisioned, we can now create the VPN connection. For this configuration, I'll set the connection 
+            to operate in <strong>ResponderOnly</strong> mode, meaning the connection will be initialized from the on-premises device (MikroTik). If you prefer Azure to act as the initiator, you can adjust the mode accordingly.</p>   
+            <p>To secure the VPN connection, we'll set a pre-shared key for IKE Phase 1 authentication. The <code>-SharedKey</code> parameter expects a plain text string, so we cannot use a secure string here. <strong>Important:</strong> Remember this key, as it will be required when configuring the on-premises VPN device.</p>
         <pre><code class="language-powershell">
 $ConnectionName       = 'mlb-vpnconn-test-euw-hq-01'
 $ConnectionMode       = 'ResponderOnly'
@@ -170,17 +238,19 @@ New-AzVirtualNetworkGatewayConnection -Name $ConnectionName -ResourceGroupName $
         </code></pre>
         <img src="images/10.png" alt="Azure Powershell - Create Network Gateway connection" class="modal-image" loading="lazy">
         <h3>11. Enable Forced Tunneling</h3>
-        <p>Enable forced tunneling to route all internet-bound traffic over the VPN:</p>
+        <p>In this final step, we’ll configure <strong>forced tunneling</strong> for the Site-to-Site VPN. As mentioned earlier, this configuration cannot be done through the Azure portal and requires PowerShell or CLI.</p>
+        <p>Forced tunneling ensures that all internet-bound traffic from your Azure Virtual Network (VNet) is routed through the VPN tunnel to your on-premises network. This allows you to inspect and filter internet traffic using your on-premises security devices, ensuring compliance with organizational policies.</p>
         <pre><code class="language-powershell">
 Set-AzVirtualNetworkGatewayDefaultSite -GatewayDefaultSite $LNGW -VirtualNetworkGateway $VNGW -Verbose
         </code></pre>
         <img src="images/11.png" alt="Azure Powershell - Enable Defaul Site" class="modal-image" loading="lazy">      
         <div class="note">
-            <p>Now, all internet-bound traffic is configured to be force tunneled to the on-prem gateway. The on-premises VPN device must be configured using 0.0.0.0/0 as traffic selectors.</p>
+            <p>At this point, all internet-bound traffic is configured to be force-tunneled through the on-premises gateway. Ensure that your on-premises VPN device is configured with <code>0.0.0.0/0</code> as the traffic selector to match this setup.</p>
         </div>
         <h3>12. Configure on-prem device Mikrotik for IKEv2/IPSec and inicialize connection </h3>
-        <p>The Azure part is done. Now lets take a look at on-prem VPN device. In my case, MikroTik. Since we have the IPsec policy defined, we must strictly adhere configuration, otherwise IKE Phase 1 or IPSec Phase 2 will fail and VPN tunnel will not be initialized. 
-            <br>Let’s proceed with configuring MikroTik and sending the initial contact:</br>
+        <p>With the Azure configuration complete, let's configure the on-premises VPN device. In this case, we're using a MikroTik router. Since we've defined a strict IPsec policy, the MikroTik 
+            configuration must match these settings. Otherwise, IKE Phase 1 or IPSec Phase 2 will fail, and the VPN tunnel won't initialize.
+            <br>Let's proceed with configuring MikroTik and sending the initial contact:</br>
         </p>
         <pre><code class="language-routeros">
 # Create profile for IKEv2 (Phase 1):
@@ -195,7 +265,68 @@ Set-AzVirtualNetworkGatewayDefaultSite -GatewayDefaultSite $LNGW -VirtualNetwork
 /ip/ipsec/policy/add peer=vpn-azure-peer tunnel=yes src-address=0.0.0.0/0 src-port=any dst-address=10.100.0.0/16 dst-port=any action=encrypt level=require ipsec-protocols=esp proposal=vpn-azure-p2-proposal        </code></pre>
         <img src="images/12.png" alt="RouterOS - Configure IPSec profile" class="modal-image" loading="lazy">  
 
+
+
+
+
+
+
+
+        <h3>12. Connection check </h3>
+        <p>Now that the VPN connection has been initialized, let's verify the status of the peers. On both sides (Azure and on-premises), we should see a connection status of <strong>Established</strong> or <strong>Connected</strong>.
+            <br>Let' start with Mikrotik router as initiator</br>
+        </p>
+        <pre><code class="language-routeros">
+# Check conection Active peers:
+/ip/ipsec/active-peers/print
+ </code></pre>
+        <img src="images/14.png" alt="RouterOS - Check Peer status" class="modal-image" loading="lazy">  
+        <p>Next, we'll verify the connection status on the Azure side using PowerShell:</p>
+        <pre><code class="language-powershell">
+            Get-AzVirtualNetworkGatewayConnection -ResourceGroupName $RGName -Name $ConnectionName
+             </code></pre>
+                    <img src="images/15.png" alt="Azure Powershell - Check Peer status" class="modal-image" loading="lazy"> 
+                    <p><strong>As we can see, the connection has been securely initialized and established.</strong></p>
+                    <p>With the connection successfully established, you can now securely route traffic between Azure and your on-premises environment.</p>
+
+
+                    <h3>13. Few key points to keep in mind</h3>
+                    <p>Before concluding, here are a few key points to keep in mind:</p>
+                    
+                    <h4>1. Asymmetric Routing</h4>
+                    <p>Asymmetric routing is not allowed in this setup. For example, if you place an Azure VM in a subnet and attempt to access it directly from the internet, it will not work. This is because forced tunneling routes all traffic (including internet-bound traffic) through the VPN gateway. To establish such a connection, you would need to create a <strong>custom route</strong> to bypass the forced tunneling configuration.</p>
+                    
+                    <h4>2. VNet Peering</h4>
+                    <p>VNet peering is fully supported in this setup. You can peer multiple Azure Virtual Networks (VNets) and route traffic through the VPN gateway. This eliminates the need to create a separate <code>GatewaySubnet</code> and VPN connection for each VNet.</p>
+                    
+                    <h4>3. Troubleshooting VPN Connection Issues</h4>
+                    <p>If your VPN connection fails to establish, follow these steps to diagnose and resolve the issue:</p>
+                    <ul>
+                        <li><strong>On-Premises Device:</strong> Enable IPSec logging to identify the root cause of the problem. For MikroTik, use the following command:
+                            <pre><code class="language-routeros">
+                    /system logging add prefix=ipsec topics=ipsec
+                            </code></pre>
+                            Check the logs to determine which phase (IKE Phase 1 or IPSec Phase 2) is failing and verify that the configuration matches on both sides.
+                        </li>
+                        <li><strong>Azure Side:</strong> Use the Azure VPN troubleshooting tool to diagnose the issue. Go to the VPN gateway in the Azure portal, select <strong>Troubleshoot</strong>, and choose or create a storage account to store the VPN logs. Download the logs and analyze them to identify issues such as mismatched IPSec policies, incorrect pre-shared keys, or other configuration errors.
+                        
+                            <p>Here's an example of a log entry indicating a failure during the IKE negotiation process (pre-shared key):</p>
+                            <pre><code>
+IKEv2-S2S [ICookie] 0xB968C77D390F5ACC [RCookie] 0x30AE204D0842D1A7 [TunnelId] 0x0 [IkeEvent] SA_NEGOTIATION_FAILED 
+For [SA_type] MM_SA [SAEstablished] false [SA_CREATION_DIRECTION] Inbound [FailureDirection] Outbound 
+[ErrorCode] 0x3602 [ErrorMessage] Failed to verify signature.
+                            </code></pre>
+
+
+                        </li>
+                    </ul>
+                    
+
+
     </main>
+
+
+
 
     <!-- Modal for displaying images -->
     <div id="imageModal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="modalTitle">
@@ -207,8 +338,8 @@ Set-AzVirtualNetworkGatewayDefaultSite -GatewayDefaultSite $LNGW -VirtualNetwork
         <!-- Add additional languages -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/powershell.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/routeros.min.js"></script>
-        <script type="module" src="js/highlight-init.js" defer></script>
-        <script type="module" src="js/display-image.js" defer></script>
+        <script src="js/highlight-init.js" defer></script>
+        <script src="js/display-image.js" defer></script>
         <script type="application/ld+json">
         {
             "@context": "https://schema.org",
