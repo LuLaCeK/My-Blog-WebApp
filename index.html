@@ -10,8 +10,8 @@
     <meta name="robots" content="index, follow">
     <meta property="og:title" content="Forced Tunneling for Site-to-Site VPN Configurations in Azure">
     <meta property="og:description" content="Step-by-step guide to configure Forced Tunneling for Site-to-Site VPN in Azure using PowerShell.">
-    <meta property="og:image" content="https://blog.go-mlb.cloud/images/2.png">
-    <meta property="og:url" content="https://blog.My-Lab.cloud/azure-vpn-forced-tunneling">
+    <meta property="og:image" content="https://blog.go-mlb.cloud/images/1.png">
+    <meta property="og:url" content="https://blog.go-mlb.cloud/">
     <meta property="og:type" content="article">
     <link rel="canonical" href="https://blog.My-Lab.cloud/azure-vpn-forced-tunneling">
     <link rel="icon" type="image/x-icon" href="icons/favicon.png">
@@ -26,7 +26,7 @@
 <body>
     <main class="container">
         <h1>Forced Tunneling for Site-to-Site Configurations (Default Site)</h1>
-        <p>By default, Azure routes outbound traffic directly via its gateways. But what if you need to ensure that all internet-bound traffic is inspected and filtered by on-premises security devices? Or what if your company’s security policies require
+        <p>By default, Azure routes outbound traffic directly via its gateways. But what if you need to ensure that all internet-bound traffic is inspected and filtered by on-premises security devices? Or what if your company's security policies require
             routing traffic through a centralized point? In such cases, configuring forced tunneling becomes essential.</p>
         <p>Let's dive into the details and walk through the configuration process step by step.</p>
 
@@ -51,7 +51,7 @@
         </ol>
 
         <h2>Azure Setup</h2>
-        <p>On the Azure side, we’ll create the following components to establish the VPN connection:</p>
+        <p>On the Azure side, we'll create the following components to establish the VPN connection:</p>
         <ol>
             <li><strong>Virtual Network:</strong> With the address space (10.100.0.0/16)</li>
             <li><strong>Local Network Gateway:</strong> Represents the on-premises VPN device in Azure.</li>
@@ -59,7 +59,7 @@
             <li><strong>VPN Connection:</strong> Configured with a custom IPSec policy in ResponderOnly </li>
         </ol>
         <h3>1. Create Tags for All Resources</h3>
-        <p>To improve cost tracking and resource management, we’ll start by creating tags for all Azure resources. Use the following PowerShell script::</p>
+        <p>To improve cost tracking and resource management, we'll start by creating tags for all Azure resources. Use the following PowerShell script::</p>
         <pre><code class="language-powershell">
 $Tags = @{
     Location    = "EU-West"
@@ -80,7 +80,7 @@ New-AzResourceGroup -Name $RGName -Location $RGLocation -Tag ($tags + @{"Resourc
         </code></pre>
         <img src="images/2.png" alt="Azure PowerShell - create Resource group" class="modal-image" loading="lazy">
         <h3>3. Create Network Security Groups (NSGs)</h3>
-        <p>Create Network Security Groups (NSGs) to control network access. Not strictly necessary, but I’ll create them for demonstration. For simplicity, I will leave NSGs with default inbound and outbound settings:</p>
+        <p>Create Network Security Groups (NSGs) to control network access. Not strictly necessary, but I'll create them for demonstration. For simplicity, I will leave NSGs with default inbound and outbound settings:</p>
         <pre><code class="language-powershell">
 $NSGName1      = 'mlb-nsg-test-euw-01'
 $NSGName2      = 'mlb-nsg-test-euw-02'
@@ -91,13 +91,13 @@ $NSGSubnet2 = New-AzNetworkSecurityGroup -ResourceGroupName $RGName -Location $R
         <h3>4. Prepare Subnets for the Azure VNet</h3>
         <p>Next, we’ll prepare the subnets for the Azure Virtual Network (VNet) and associate the previously created Network Security Groups (NSGs). Note that NSGs <strong>cannot</strong> be attached to the Gateway subnet, as this would block essential traffic
             required for the VPN Gateway to function.</p>
-        <p>For the VNet, we’ll use the address space <code>10.100.0.0/16</code> (which we’ll define in the next step). Within this address space, we’ll create the following subnets:</p>
+        <p>For the VNet, we’ll use the address space <code>10.100.0.0/16</code> (which we'll define in the next step). Within this address space, we'll create the following subnets:</p>
         <ul>
             <li><strong>Subnet 1:</strong> <code>10.100.9.0/24</code></li>
             <li><strong>Subnet 2:</strong> <code>10.100.10.0/24</code></li>
             <li><strong>GatewaySubnet:</strong> <code>10.100.1.0/24</code></li>
         </ul>
-        <p>The GatewaySubnet requires special attention. While the smallest supported prefix is <code>/27</code> (providing 32 IP addresses), the Azure VPN Gateway needs at least 8 IP addresses to operate. For better scalability, I’ve chosen a <code>/24</code>            prefix, which provides 256 IP addresses.</p>
+        <p>The GatewaySubnet requires special attention. While the smallest supported prefix is <code>/27</code> (providing 32 IP addresses), the Azure VPN Gateway needs at least 8 IP addresses to operate. For better scalability, I've chosen a <code>/24</code>            prefix, which provides 256 IP addresses.</p>
         <p><strong>Important Considerations:</strong></p>
         <ul>
             <li>Ensure that the IP address ranges in Azure do <strong>not overlap</strong> with the IP addresses in your on-premises network. For example, if both networks use <code>10.100.0.0/16</code>, routing issues will occur when the Site-to-Site VPN
@@ -125,9 +125,9 @@ $GWSubnet = New-AzVirtualNetworkSubnetConfig -Name $GatewaySubnetName -AddressPr
         </ul>
         <p><strong>Important Considerations:</strong></p>
         <ul>
-            <li>The VNet’s address space <strong>must not overlap</strong> with your on-premises network. For example, if your on-premises network uses <code>10.100.0.0/16</code>, you’ll need to choose a different address space for the Azure VNet to avoid
+            <li>The VNet’s address space <strong>must not overlap</strong> with your on-premises network. For example, if your on-premises network uses <code>10.100.0.0/16</code>, you'll need to choose a different address space for the Azure VNet to avoid
                 routing conflicts.</li>
-            <li>Ensure that the subnets created earlier fall within the VNet’s address space. This is critical for proper network communication and VPN connectivity.</li>
+            <li>Ensure that the subnets created earlier fall within the VNet's address space. This is critical for proper network communication and VPN connectivity.</li>
         </ul>
         <pre><code class="language-powershell">
 $VNETName      = 'mlb-vnet-test-euw-01'
@@ -193,7 +193,7 @@ $VNGW = New-AzVirtualNetworkGateway -Name $VNGWName -ResourceGroupName $RGName -
         <img src="images/8.png" alt="Azure Powershell - Create Virtual Network Gateway (VNGW)" class="modal-image" loading="lazy">
         <h3>9. Configure IPSec Policy</h3>
         <p>Once the Virtual Network Gateway (VNGW) is deployed, we can configure the <strong>IPSec policy</strong> for the VPN connection. While Azure provides default settings (which you can find <a href="https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-about-vpn-devices#devicetable"
-            target="_blank" rel="noopener noreferrer">here</a>), it’s important to verify that your on-premises VPN device supports the chosen encryption and hashing algorithms. For this demonstration, I’ll customize the policy to meet specific requirements.</p>
+            target="_blank" rel="noopener noreferrer">here</a>), it's important to verify that your on-premises VPN device supports the chosen encryption and hashing algorithms. For this demonstration, I'll customize the policy to meet specific requirements.</p>
         <p>IPSec operates in two phases:</p>
         <ol>
             <li><strong>Phase 1: Key Exchange (IKE - Internet Key Exchange)</strong>
