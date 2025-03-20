@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Learn how to configure Forced Tunneling for Site-to-Site VPN configurations in Azure. Step-by-step guide with PowerShell scripts and screenshots.">
+    <meta name="keywords" content="Azure VPN, Forced Tunneling, Site-to-Site VPN, Azure PowerShell, VPN Gateway, Azure Networking">
+    <meta name="author" content="Tomas Sramek">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Forced Tunneling for Site-to-Site VPN Configurations in Azure">
+    <meta property="og:description" content="Step-by-step guide to configure Forced Tunneling for Site-to-Site VPN in Azure using PowerShell.">
+    <meta property="og:image" content="https://blog.My-Lab.cloud/images/azure-vpn-forced-tunneling.jpg">
+    <meta property="og:url" content="https://blog.My-Lab.cloud/azure-vpn-forced-tunneling">
+    <meta property="og:type" content="article">
+    <link rel="canonical" href="https://blog.My-Lab.cloud/azure-vpn-forced-tunneling">
+    <link rel="icon" type="image/x-icon" href="../icons/favicon.png">
+    <meta name="theme-color" content="#3498db">
+    <title>Forced Tunneling - Azure VPN</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-light.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/mobile.css">
+</head>
+<body>
+    <main class="container">
+        <h1>Forced Tunneling for Site-to-Site Configurations (Default Site)</h1>
+        
+        <h3>Azure configuration</h3>
+        <pre><code class="language-powershell">
+# Define variables
+# Tags default variables
+$Tags = @{
+    Location    = "EU-West"    # Location tag for resource identification
+    Environment = "Test"       # Environment tag (e.g., Test, Production)
+    Project     = "My-Lab"     # Project name for resource tracking
+ }                              # Tags to apply to the resources
+# Resource Group Variables
+$RGName        = 'mlb-rg-test-euw-01'    # Resource Group name
+$RGLocation    = 'westeurope'            # Location for the Resource Group
+$ResourceLocation = 'westeurope'         # Location for resources in the RG
+# Network Security Group (NSG) Variables
+$NSGName1      = 'mlb-nsg-test-euw-01'   # Name of the first Network Security Group (NSG)
+$NSGName2      = 'mlb-nsg-test-euw-02'   # Name of the second Network Security Group (NSG)
+# Virtual Network (VNET) Variables
+$VNETName      = 'mlb-vnet-test-euw-01'  # Virtual Network name
+$VNETAddressPrefix = '10.100.0.0/16'     # Address range for the virtual network
+# Subnet Variables
+$SubnetName1      = 'mlb-snet-test-euw-01'          # Name of the first subnet
+$SubnetName1AddressPrefix = '10.100.9.0/24'         # Address range for the first subnet
+$SubnetName2      = 'mlb-snet-test-euw-02'          # Name of the second subnet
+$SubnetName2AddressPrefix = '10.100.10.0/24'        # Address range for the second subnet
+$GatewaySubnetName = 'GatewaySubnet'                # Name of the gateway subnet
+$GatewaySubnetNameAddressPrefix = '10.100.1.0/24'   # Address range for the gateway subnet
+# Local Network Gateway Variables
+$LNGWName        = 'mlb-lngw-test-euw-hq-01'    # Name of the local network gateway
+$LNGWFQDM        = 'vpn.my-lab.sk'              # Fully qualified domain name (FQDN) of the local network gateway
+$LNGWAddressPrefix = @(
+            "192.168.1.1/32",    
+            "192.168.88.0/24", 
+            "192.168.100.0/24", 
+            "10.200.9.0/24", 
+            "10.200.10.0/24", 
+            "10.200.15.0/24", 
+            "10.200.16.0/24"
+        )                                        # Address prefixes for the local network gateway
+# Public IP Address and Virtual Network Gateway Variables
+$PIPName         = 'mlb-pip-test-euw-01'        # Name of the public IP address for the VPN gateway
+$IPAllocation    = 'Static'                     # Static IP allocation for the public IP address
+$VNGWName        = 'mlb-vngw-test-euw-hq-01'    # Name of the virtual network gateway
+$VNGWSKU         = 'VpnGw1'                     # SKU for the VPN gateway
+$VpnGatewayGeneration = 'Generation1'           # Generation for the VPN gateway
+$GatewayType    = 'Vpn'                         # Type of the gateway
+$VpnType        = 'RouteBased'                  # Type of VPN
+$AzVirtualNetworkGatewayIpConfigName = 'VNGWIPConfig' # Name for the Virtual Network Gateway IP configuration
+# IPSec Policy Variables (for custom IKEv2/IPSec configuration)
+$IkeEncryption        = 'AES256'               # Encryption algorithm for IKE phase 1
+$IkeIntegrity         = 'SHA256'               # Integrity algorithm for IKE phase 1
+$DhGroup              = 'DHGroup2048'          # Diffie-Hellman group for key exchange
+$IpsecEncryption      = 'AES256'               # Encryption algorithm for IPSec (phase 2)
+$IpsecIntegrity       = 'SHA256'               # Integrity algorithm for IPSec (phase 2)
+$PfsGroup             = 'PFS24'                # Perfect Forward Secrecy group for IPSec
+$SADataSizeKilobytes  = '512000'               # Data size for Security Association (SA) before renegotiation (in KB)
+$SALifeTimeSeconds    = '3600'                 # Lifetime of the Security Association (in seconds)
+# VPN Connection Variables
+$ConnectionName       = 'mlb-vpnconn-test-euw-hq-01'  # Name of the VPN connection
+$ConnectionMode       = 'ResponderOnly'               # Connection mode for VPN (e.g., Initiator, Responder)
+$ConnectionType       = 'IPSec'                       # Connection type (IPSec, SSTP, etc.)
+$DpdTimeoutInSeconds  = '45'                          # Dead Peer Detection (DPD) timeout (in seconds)
+# Secure Shared Key Input
+$SharedKey            = Read-Host "Shared Key" -AsSecureString   # Prompt the user to input the shared key securely
+$SharedKeyPlainString = ConvertFrom-SecureString -SecureString $SharedKey -AsPlainText   # Convert shared key to plain text
+
+# Create Resource Group with specified tags
+New-AzResourceGroup -Name $RGName -Location $RGLocation -Tag ($tags + @{"Resource" = $RGName}) -Verbose
+            
+# Create Network Security Groups (NSGs)
+$NSGSubnet1 = New-AzNetworkSecurityGroup -ResourceGroupName $RGName -Location $ResourceLocation -Name $NSGName1 -Tag ($tags + @{"Resource" = $NSGName1}) -Verbose
+            $NSGSubnet2 = New-AzNetworkSecurityGroup -ResourceGroupName $RGName -Location $ResourceLocation -Name $NSGName2 -Tag ($tags + @{"Resource" = $NSGName2}) -Verbose
+            
+# Create Subnets and associate NSGs
+$Subnet1 = New-AzVirtualNetworkSubnetConfig -Name $SubnetName1 -AddressPrefix $SubnetName1AddressPrefix -NetworkSecurityGroup $NSGSubnet1 -Verbose
+$Subnet2 = New-AzVirtualNetworkSubnetConfig -Name $SubnetName2 -AddressPrefix $SubnetName2AddressPrefix -NetworkSecurityGroup $NSGSubnet2 -Verbose
+$GWSubnet = New-AzVirtualNetworkSubnetConfig -Name $GatewaySubnetName -AddressPrefix $GatewaySubnetNameAddressPrefix -Verbose
+            
+# Create Virtual Network and associate subnets
+$VNET = New-AzVirtualNetwork -Name $VNETName -ResourceGroupName $RGName -Location $ResourceLocation -AddressPrefix $VNETAddressPrefix -Subnet $Subnet1,$Subnet2,$GWSubnet -Tag ($tags + @{"Resource" = $VNETName}) -Verbose
+            
+# Create Local Network Gateway (LNGW)
+$LNGW = New-AzLocalNetworkGateway -Name $LNGWName -ResourceGroupName $RGName -Location $ResourceLocation -Fqdn $LNGWFQDM -AddressPrefix $LNGWAddressPrefix -Tag ($tags + @{"Resource" = $LNGWName}) -Verbose
+            
+# Create Public IP Address for VPN Gateway
+$VNGWPIP = New-AzPublicIpAddress -Name $PIPName -ResourceGroupName $RGName -Location $ResourceLocation -AllocationMethod $IPAllocation -Tag ($tags + @{"Resource" = $PIPName}) -Verbose
+            
+# Create Virtual Network Gateway (VNGW)
+$Subnet = Get-AzVirtualNetworkSubnetConfig -Name $GatewaySubnetName -VirtualNetwork $VNET
+$GWIPConfig = New-AzVirtualNetworkGatewayIpConfig -Name $AzVirtualNetworkGatewayIpConfigName -SubnetId $Subnet.Id -PublicIpAddressId $VNGWPIP.Id -Verbose
+$VNGW = New-AzVirtualNetworkGateway -Name $VNGWName -ResourceGroupName $RGName -Location $ResourceLocation -IpConfigurations $GWIPConfig -GatewayType $GatewayType -VpnType $VpnType -GatewaySku $VNGWSKU -VpnGatewayGeneration $VpnGatewayGeneration -Tag ($tags + @{"Resource" = $VNGWName}) -Verbose
+            
+# Create custom IPSec / IKEv2 Policy
+$IPSecPolicy = New-AzIpsecPolicy -IkeEncryption $IkeEncryption -IkeIntegrity $IkeIntegrity -DhGroup $DhGroup -IpsecEncryption $IpsecEncryption -IpsecIntegrity $IpsecIntegrity -PfsGroup $PfsGroup -SADataSizeKilobytes $SADataSizeKilobytes -SALifeTimeSeconds $SALifeTimeSeconds -Verbose
+            
+# Create VPN Gateway Connection
+New-AzVirtualNetworkGatewayConnection -Name $ConnectionName -ResourceGroupName $RGName -VirtualNetworkGateway1 $VNGW -LocalNetworkGateway2 $LNGW -Location $ResourceLocation -ConnectionType $ConnectionType -ConnectionMode $ConnectionMode -IpsecPolicies $IPSecPolicy -DpdTimeoutInSeconds $DpdTimeoutInSeconds -SharedKey $SharedKeyPlainString -Tag ($tags + @{"Resource" = $ConnectionName}) -Verbose
+            
+# Set Default Site for Virtual Network Gateway
+Set-AzVirtualNetworkGatewayDefaultSite -GatewayDefaultSite $LNGW -VirtualNetworkGateway $VNGW -Verbose
+        </code></pre>
+
+        <h3>Mikrotik configuration </h3>
+         <pre><code class="language-routeros">
+# Create profile for IKEv2 (Phase 1):
+/ip/ipsec/profile/add name="vpn-azure-p1-profile" hash-algorithm=sha256 prf-algorithm=sha256 enc-algorithm=aes-256 dh-group=modp2048 proposal-check=obey lifetime=1h lifebytes=512000k nat-traversal=no dpd-interval=45 dpd-maximum-failures=5
+# Create Peer (Phase 1)
+/ip/ipsec/peer/add name=vpn-azure-peer address=51.144.32.222 port=500 local-address=188.167.102.81 profile=vpn-azure-p1-profile exchange-mode=ike2 passive=no send-initial-contact=yes
+# Create Identity (Phase 1)
+/ip/ipsec/identity/add peer=vpn-azure-peer auth-method=pre-shared-key secret=Heslo12345 my-id=fqdn:vpn.my-lab.sk remote-id=address:51.144.32.222 match-by=remote-id mode-config=none generate-policy=no
+# Create Proposal for IPSec (Phase 2)
+/ip/ipsec/proposal/add name=vpn-azure-p2-proposal auth-algorithms=sha256 enc-algorithms=aes-256-cbc lifetime=1h pfs-group=modp2048
+# Create IPSec policy (Phase 1 and Phase 2) - 0.0.0.0/0 as traffic selector
+/ip/ipsec/policy/add peer=vpn-azure-peer tunnel=yes src-address=0.0.0.0/0 src-port=any dst-address=10.100.0.0/16 dst-port=any action=encrypt level=require ipsec-protocols=esp proposal=vpn-azure-p2-proposal        </code></pre>                  
+</main>
+
+
+
+
+<!-- Modal for displaying images -->
+    <div id="imageModal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="modalTitle">
+        <span class="close" aria-label="Close modal">&times;</span>
+        <img class="modal-content" id="modalImage" alt="Enlarged view of the image for better size - readability">
+    </div>
+        <!-- Add highlight.js JavaScript -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+        <!-- Add additional languages -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/powershell.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/routeros.min.js"></script>
+        <script src="../js/highlight-init.js" defer></script>
+        <script src="../js/display-image.js" defer></script>
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            "headline": "Forced Tunneling for Site-to-Site VPN Configurations in Azure",
+            "description": "Step-by-step guide to configure Forced Tunneling for Site-to-Site VPN in Azure using PowerShell.",
+            "author": {
+                "@type": "Person",
+                "name": "Tomas Sramek"
+            },
+            "datePublished": "2025-01-20",
+            "image": "https://blog.My-Lab.cloud/images/azure-vpn-forced-tunneling.jpg"
+        }
+        </script>
+</body>
+</html>
