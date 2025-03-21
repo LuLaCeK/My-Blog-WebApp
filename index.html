@@ -12,7 +12,7 @@
     <meta property="og:image" content="https://blog.go-mlb.cloud/icons/page.jpg">
     <meta property="og:url" content="https://blog.go-mlb.cloud/">
     <meta property="og:type" content="article">
-    <link rel="canonical" href="https://blog.My-Lab.cloud/">
+    <link rel="canonical" href="https://blog.go-mlb.cloud/">
     <link rel="icon" type="image/x-icon" href="icons/favicon.png">
     <meta name="theme-color" content="#3498db">
     <title>Forced Tunneling - Azure VPN</title>
@@ -53,7 +53,7 @@
             <li><strong>Virtual Network:</strong> With the address space (10.100.0.0/16)</li>
             <li><strong>Local Network Gateway:</strong> Represents the on-premises VPN device in Azure.</li>
             <li><strong>Virtual Network Gateway:</strong> Acts as the VPN gateway for the Azure virtual network.</li>
-            <li><strong>VPN Connection:</strong> Configured with a custom IPSec policy in ResponderOnly </li>
+            <li><strong>VPN Connection:</strong> Configured with a custom IPSec policy - Responder </li>
         </ol>
         <h3>1. Create Tags for All Resources</h3>
         <p>To improve cost tracking and resource management, we'll start by creating tags for all Azure resources. Use the following PowerShell script::</p>
@@ -141,7 +141,7 @@ $VNET = New-AzVirtualNetwork -Name $VNETName -ResourceGroupName $RGName -Locatio
         </ol>
         <pre><code class="language-powershell">
 $LNGWName        = 'mlb-lngw-test-euw-hq-01'
-$LNGWFQDM        = 'vpn.My-Lab.cloud'
+$LNGWFQDM        = 'vpn.my-lab.sk'
 $LNGWAddressPrefix = @(
     "192.168.1.1/32",
     "192.168.88.0/24",
@@ -298,9 +298,9 @@ Set-AzVirtualNetworkGatewayDefaultSite -GatewayDefaultSite $LNGW -VirtualNetwork
         <h4>3. Troubleshooting VPN Connection Issues</h4>
         <p>If your VPN connection fails to establish, follow these steps to diagnose and resolve the issue:</p>
         <ul>
-            <li><strong>On-Premises Device:</strong> Enable IPSec logging to identify the root cause of the problem. For MikroTik, use the following command:
+            <li><strong>On-premises Device:</strong> Enable IPSec logging to identify the root cause of the problem. For MikroTik, use the following command:
                 <pre><code class="language-routeros">
-                    /system logging add prefix=ipsec topics=ipsec
+                    /system/logging/add prefix=ipsec topics=ipsec
                             </code></pre> Check the logs to determine which phase (IKE Phase 1 or IPSec Phase 2) is failing and verify that the configuration matches on both sides.
             </li>
             <li><strong>Azure Side:</strong> Use the Azure VPN troubleshooting tool to diagnose the issue. Go to the VPN gateway in the Azure portal, select <strong>Troubleshoot</strong>, and choose or create a storage account to store the VPN logs. Download
@@ -330,7 +330,7 @@ For [SA_type] MM_SA [SAEstablished] false [SA_CREATION_DIRECTION] Inbound [Failu
     <script src="js/display-image.js" defer></script>
     <script type="application/ld+json">
         { "@context": "https://schema.org", "@type": "Article", "headline": "Forced Tunneling for Site-to-Site VPN Configurations in Azure", "description": "Step-by-step guide to configure Forced Tunneling for Site-to-Site VPN in Azure using PowerShell.", "author":
-        { "@type": "Person", "name": "Tomas Sramek" }, "datePublished": "2025-01-20", "image": "https://blog.My-Lab.cloud/images/azure-vpn-forced-tunneling.jpg" }
+        { "@type": "Person", "name": "Tomas Sramek" }, "datePublished": "2025-01-20", "image": "https://blog.go-mlb.cloud/images/azure-vpn-forced-tunneling.jpg" }
     </script>
 </body>
 </html>
