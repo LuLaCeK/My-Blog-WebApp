@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,13 +21,12 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/mobile.css">
 </head>
-
 <body>
     <main class="container">
         <h1>Forced Tunneling for Site-to-Site Configurations (Default Site)</h1>
-        <p>By default, Azure routes outbound traffic directly via its gateways. But what if you need to ensure that all internet-bound traffic is inspected and filtered by on-premises security devices? Or what if your company's security policies require
-            routing traffic through a centralized point? In such cases, configuring forced tunneling becomes essential.</p>
-        <p>Let's dive into the details and walk through the configuration process step by step.</p>
+        <p>Securing your on-premises network connection to Azure is key. By default, Azure sends outbound traffic directly through its gateways. But what if you need to route and inspect that traffic through your on-premises security devices?
+           In this guide, I'll show you how to set up a Site-to-Site VPN and configure Forced Tunneling in Azure.</p>
+        <p>Let's dive in.</p>
 
         <h2>On-premises Setup</h2>
         <ol>
@@ -49,7 +47,6 @@
                 </ol>
             </li>
         </ol>
-
         <h2>Azure Setup</h2>
         <p>On the Azure side, we'll create the following components to establish the VPN connection:</p>
         <ol>
@@ -89,9 +86,9 @@ $NSGSubnet2 = New-AzNetworkSecurityGroup -ResourceGroupName $RGName -Location $R
         </code></pre>
         <img src="images/3.png" alt="Azure PowerShell - create Network Security Group (NSG)" class="modal-image" loading="lazy">
         <h3>4. Prepare Subnets for the Azure VNet</h3>
-        <p>Next, we’ll prepare the subnets for the Azure Virtual Network (VNet) and associate the previously created Network Security Groups (NSGs). Note that NSGs <strong>cannot</strong> be attached to the Gateway subnet, as this would block essential traffic
+        <p>Next, we'll prepare the subnets for the Azure Virtual Network (VNet) and associate the previously created Network Security Groups (NSGs). Note that NSGs <strong>cannot</strong> be attached to the Gateway subnet, as this would block essential traffic
             required for the VPN Gateway to function.</p>
-        <p>For the VNet, we’ll use the address space <code>10.100.0.0/16</code> (which we'll define in the next step). Within this address space, we'll create the following subnets:</p>
+        <p>For the VNet, we'll use the address space <code>10.100.0.0/16</code> (which we'll define in the next step). Within this address space, we'll create the following subnets:</p>
         <ul>
             <li><strong>Subnet 1:</strong> <code>10.100.9.0/24</code></li>
             <li><strong>Subnet 2:</strong> <code>10.100.10.0/24</code></li>
@@ -117,7 +114,7 @@ $GWSubnet = New-AzVirtualNetworkSubnetConfig -Name $GatewaySubnetName -AddressPr
         </code></pre>
         <img src="images/4.png" alt="Azure Powrshell - Config subnets for Vnet" class="modal-image" loading="lazy">
         <h3>5. Create Virtual Network</h3>
-        <p>In this step, we’ll create the Virtual Network (VNet) in Azure. The VNet will use the address space <code>10.100.0.0/16</code>, which must include all the subnets created in the previous step:</p>
+        <p>In this step, we'll create the Virtual Network (VNet) in Azure. The VNet will use the address space <code>10.100.0.0/16</code>, which must include all the subnets created in the previous step:</p>
         <ul>
             <li><code>10.100.9.0/24</code></li>
             <li><code>10.100.10.0/24</code></li>
@@ -125,7 +122,7 @@ $GWSubnet = New-AzVirtualNetworkSubnetConfig -Name $GatewaySubnetName -AddressPr
         </ul>
         <p><strong>Important Considerations:</strong></p>
         <ul>
-            <li>The VNet’s address space <strong>must not overlap</strong> with your on-premises network. For example, if your on-premises network uses <code>10.100.0.0/16</code>, you'll need to choose a different address space for the Azure VNet to avoid
+            <li>The VNet's address space <strong>must not overlap</strong> with your on-premises network. For example, if your on-premises network uses <code>10.100.0.0/16</code>, you'll need to choose a different address space for the Azure VNet to avoid
                 routing conflicts.</li>
             <li>Ensure that the subnets created earlier fall within the VNet's address space. This is critical for proper network communication and VPN connectivity.</li>
         </ul>
@@ -160,7 +157,7 @@ $LNGW = New-AzLocalNetworkGateway -Name $LNGWName -ResourceGroupName $RGName -Lo
         <h3>7. Create Public IP Address (PIP)</h3>
         <p>To establish a connection between Azure and your on-premises network, we need a <strong>Public IP address (PIP)</strong>. This address must be routable on the internet, allowing communication between your on-premises network and Azure, and vice
             versa.</p>
-        <p>In the next step, we’ll create a <strong>Virtual Network Gateway (VNGW)</strong> with a <strong>Standard SKU</strong>. To ensure compatibility, the Public IP address must also use the <strong>Standard SKU</strong>. </p>
+        <p>In the next step, we'll create a <strong>Virtual Network Gateway (VNGW)</strong> with a <strong>Standard SKU</strong>. To ensure compatibility, the Public IP address must also use the <strong>Standard SKU</strong>. </p>
         <p>Ensure the <strong>Public IP address</strong> and the <strong>Virtual Network Gateway</strong> use the <strong>same SKU</strong> (Standard) to avoid compatibility issues:</p>
         <pre><code class="language-powershell">
 $PIPName         = 'mlb-pip-test-euw-01'
@@ -178,7 +175,6 @@ $VNGWPIP = New-AzPublicIpAddress -Name $PIPName -ResourceGroupName $RGName -Loca
             <li><strong>Active-Active Mode:</strong> If high availability is required. This configuration requires two public IP addresses.</li>
             <li><strong>VPN Type:</strong><code>RouteBased</code> (dynamic routing) or <code>PolicyBased</code> (static routing).</li>
         </ol>
-
         <pre><code class="language-powershell">
 $VNGWName        = 'mlb-vngw-test-euw-hq-01'
 $VNGWSKU         = 'VpnGw1'
@@ -248,7 +244,7 @@ New-AzVirtualNetworkGatewayConnection -Name $ConnectionName -ResourceGroupName $
         </code></pre>
         <img src="images/10.png" alt="Azure Powershell - Create Network Gateway connection" class="modal-image" loading="lazy">
         <h3>11. Enable Forced Tunneling</h3>
-        <p>In this final step, we’ll configure <strong>forced tunneling</strong> for the Site-to-Site VPN. As mentioned earlier, this configuration cannot be done through the Azure portal and requires PowerShell or CLI.</p>
+        <p>In this final step, we'll configure <strong>forced tunneling</strong> for the Site-to-Site VPN. As mentioned earlier, this configuration cannot be done through the Azure portal and requires PowerShell or CLI.</p>
         <p>Forced tunneling ensures that all internet-bound traffic from your Azure Virtual Network (VNet) is routed through the VPN tunnel to your on-premises network. This allows you to inspect and filter internet traffic using your on-premises security
             devices, ensuring compliance with organizational policies.</p>
         <pre><code class="language-powershell">
@@ -291,19 +287,14 @@ Set-AzVirtualNetworkGatewayDefaultSite -GatewayDefaultSite $LNGW -VirtualNetwork
         <img src="images/15.png" alt="Azure Powershell - Check Peer status" class="modal-image" loading="lazy">
         <p><strong>As we can see, the connection has been securely initialized and established.</strong></p>
         <p>With the connection successfully established, you can now securely route traffic between Azure and your on-premises environment.</p>
-
-
         <h3>13. Few key points to keep in mind</h3>
         <p>Before concluding, here are a few key points to keep in mind:</p>
-
         <h4>1. Asymmetric Routing</h4>
         <p>Asymmetric routing is not allowed in this setup. For example, if you place an Azure VM in a subnet and attempt to access it directly from the internet, it will not work. This is because forced tunneling routes all traffic (including internet-bound
             traffic) through the VPN gateway. To establish such a connection, you would need to create a <strong>custom route</strong> to bypass the forced tunneling configuration.</p>
-
         <h4>2. VNet Peering</h4>
         <p>VNet peering is fully supported in this setup. You can peer multiple Azure Virtual Networks (VNets) and route traffic through the VPN gateway. This eliminates the need to create a separate <code>GatewaySubnet</code> and VPN connection for each
             VNet.</p>
-
         <h4>3. Troubleshooting VPN Connection Issues</h4>
         <p>If your VPN connection fails to establish, follow these steps to diagnose and resolve the issue:</p>
         <ul>
@@ -321,15 +312,10 @@ IKEv2-S2S [ICookie] 0xB968C77D390F5ACC [RCookie] 0x30AE204D0842D1A7 [TunnelId] 0
 For [SA_type] MM_SA [SAEstablished] false [SA_CREATION_DIRECTION] Inbound [FailureDirection] Outbound 
 [ErrorCode] 0x3602 [ErrorMessage] Failed to verify signature.
                             </code></pre>
-
-
             </li>
         </ul>
-
         <a href="pages/code.html" target="_blank" rel="noopener noreferrer">Entire code can be find here.</a>
-
     </main>
-
     <!-- Modal for displaying images -->
     <div id="imageModal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="modalTitle">
         <span class="close" aria-label="Close modal">&times;</span>
@@ -347,5 +333,4 @@ For [SA_type] MM_SA [SAEstablished] false [SA_CREATION_DIRECTION] Inbound [Failu
         { "@type": "Person", "name": "Tomas Sramek" }, "datePublished": "2025-01-20", "image": "https://blog.My-Lab.cloud/images/azure-vpn-forced-tunneling.jpg" }
     </script>
 </body>
-
 </html>
