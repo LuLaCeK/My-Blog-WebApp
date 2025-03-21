@@ -321,6 +321,19 @@ For [SA_type] MM_SA [SAEstablished] false [SA_CREATION_DIRECTION] Inbound [Failu
         <span class="close" aria-label="Close modal">&times;</span>
         <img class="modal-content" id="modalImage" alt="Enlarged view of the image for better size - readability">
     </div>
+    <div class="container comment-section">
+        <div class="comment-form">
+            <h2>Add a Comment</h2>
+            <div id="error-message" class="error"></div>
+            <input type="text" id="name-input" placeholder="Your Name">
+            <textarea id="comment-input" placeholder="Write your comment here..."></textarea>
+            <button id="submit-comment">Post Comment</button>
+        </div>
+        
+        <h2>Comments</h2>
+        <div id="loading">Loading comments...</div>
+        <div id="comments-container" class="comments-container"></div>
+    </div>
     <!-- Add highlight.js JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
     <!-- Add additional languages -->
