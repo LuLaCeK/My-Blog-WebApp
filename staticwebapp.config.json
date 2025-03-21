@@ -2,6 +2,7 @@
   "routes": [
     {
       "route": "/test",
+      "rewrite": "/index.html",
       "redirect": "/index.html"
     }
   ]
