@@ -51,4 +51,207 @@
     .close {
         font-size: 24px; /* Larger close button for mobile */
     }
+
+
+.comment-form {
+    background-color: white;
+    margin-bottom: 30px;
+}
+
+.comment-form h2 {
+    margin-top: 0;
+}
+
+.comment-form input, .comment-form textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.comment-form textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.comment-form button {
+    background-color: #4285f4;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.comment-form button:hover {
+    background-color: #3367d6;
+}
+
+.comments-container {
+    margin-top: 20px;
+}
+
+.comment {
+    background-color: white;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.author {
+    font-weight: bold;
+    color: #333;
+}
+
+.timestamp {
+    color: #888;
+    font-size: 0.85em;
+}
+
+.comment-text {
+    color: #444;
+    line-height: 1.5;
+}
+
+.delete-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 8px;
+    cursor: pointer;
+    font-size: 0.8em;
+    display: none;
+}
+
+.comment:hover .delete-btn {
+    display: block;
+}
+
+#loading {
+    text-align: center;
+    color: #666;
+    margin: 20px 0;
+}
+
+.error {
+    color: #f44336;
+    margin: 10px 0;
+}
+
+
+/* comment section */
+
+
+.comment-form {
+    background-color: white;
+    margin-bottom: 30px;
+}
+
+.comment-form h2 {
+    margin-top: 0;
+}
+
+.comment-form input, .comment-form textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.comment-form textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.comment-form button {
+    background-color: #4285f4;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.comment-form button:hover {
+    background-color: #3367d6;
+}
+
+.comments-container {
+    margin-top: 20px;
+}
+
+.comment {
+    background-color: white;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.author {
+    font-weight: bold;
+    color: #333;
+}
+
+.timestamp {
+    color: #888;
+    font-size: 0.85em;
+}
+
+.comment-text {
+    color: #444;
+    line-height: 1.5;
+}
+
+.delete-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 8px;
+    cursor: pointer;
+    font-size: 0.8em;
+    display: none;
+}
+
+.comment:hover .delete-btn {
+    display: block;
+}
+
+#loading {
+    text-align: center;
+    color: #666;
+    margin: 20px 0;
+}
+
+.error {
+    color: #f44336;
+    margin: 10px 0;
+}
+
+
 }
