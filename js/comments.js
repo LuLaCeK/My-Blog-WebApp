@@ -43,8 +43,7 @@
                 
                 const response = await fetch('https://myblog-test-apims-euw-01.azure-api.net/api/v1.0/HttpTrigger', {
                   method: 'POST',
-                  headers: {'ocp-apim-subscription-key': 'e61d13780ee34ed89c7f6f2c552fcb8d',
-                            'content-type': 'application/json'
+                  headers: {'content-type': 'application/json'
                     },
                     body: JSON.stringify(newComment)
                 });
@@ -74,8 +73,7 @@
                 // Add orderBy and limitToLast parameters for sorting and limiting
                 const response = await fetch('https://myblog-test-apims-euw-01.azure-api.net/api/v1.0/HttpTrigger', {
                   method: 'GET',
-                  headers: {'ocp-apim-subscription-key': 'e61d13780ee34ed89c7f6f2c552fcb8d',
-                            'content-type': 'application/json'
+                  headers: {'content-type': 'application/json'
                     }
                 });
                 
