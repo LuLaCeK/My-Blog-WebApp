@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 // Configuration
 const APIM_ENDPOINT = 'https://myblog-test-apims-euw-01.azure-api.net/api/v1.0/HttpTrigger';
 const APIM_SUBSCRIPTION_KEY = 'e61d13780ee34ed89c7f6f2c552fcb8d'; // Store this securely
@@ -60,7 +59,6 @@ async function debugCosmosRequest() {
     console.log('Final data:', data);
     document.getElementById('output').textContent = JSON.stringify(data, null, 2);
   });
-=======
 // Configuration
 const APIM_ENDPOINT = 'https://myblog-test-apims-euw-01.azure-api.net/api/v1.0/HttpTrigger';
 const APIM_SUBSCRIPTION_KEY = 'e61d13780ee34ed89c7f6f2c552fcb8d'; // Store this securely
@@ -122,4 +120,3 @@ async function debugCosmosRequest() {
     console.log('Final data:', data);
     document.getElementById('output').textContent = JSON.stringify(data, null, 2);
   });
->>>>>>> 241f9d5c20c8b62b5b6fb3007ca9573ecf8e33df
