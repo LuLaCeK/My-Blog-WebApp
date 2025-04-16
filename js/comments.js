@@ -1,5 +1,5 @@
 // Configuration
-const APIM_ENDPOINT = 'http://localhost:7071/api/HttpTrigger';
+const APIM_ENDPOINT = 'https://myblog-test-apims-euw-01.azure-api.net/api/v1.0/HttpTrigger';
 const APIM_SUBSCRIPTION_KEY = 'e61d13780ee34ed89c7f6f2c552fcb8d'; // Store this securely
 
 // Main function to fetch data from Cosmos DB via APIM
