@@ -1,5 +1,5 @@
-// Firebase Realtime Database configuration
-        // Replace with your own Firebase project details
+// CosmosDB Realtime Database configuration
+        // Replace with your own CosmosDB project details
                 
         // DOM Elements
         const nameInput = document.getElementById('name-input');
@@ -8,11 +8,8 @@
         const commentsContainer = document.getElementById('comments-container');
         const loadingElement = document.getElementById('loading');
         const errorMessage = document.getElementById('error-message');
-        
-        // Comment polling interval (milliseconds)
-        const POLLING_INTERVAL = 5000;
-        let pollingTimeout;
-        
+      
+     
         // Submit a new comment
         submitBtn.addEventListener('click', async () => {
             const name = nameInput.value.trim();
@@ -34,7 +31,7 @@
                 submitBtn.disabled = true;
                 submitBtn.textContent = 'Posting...';
                 
-                // Add comment to Firebase using REST API
+                // Add comment to CosmosDB using REST API
                 const newComment = {
                     username: name,
                     content: commentText,
@@ -43,7 +40,8 @@
                 
                 const response = await fetch('https://myblog-test-apims-euw-01.azure-api.net/api/v1.0/HttpTrigger', {
                   method: 'POST',
-                  headers: {'content-type': 'application/json'
+                  headers: {'ocp-apim-subscription-key': 'e61d13780ee34ed89c7f6f2c552fcb8d',
+                            'content-type': 'application/json'
                     },
                     body: JSON.stringify(newComment)
                 });
@@ -67,13 +65,14 @@
             }
         });
         
-        // Fetch comments from Firebase
+        // Fetch comments from CosmosDB using REST API
         async function fetchComments() {
             try {
                 // Add orderBy and limitToLast parameters for sorting and limiting
                 const response = await fetch('https://myblog-test-apims-euw-01.azure-api.net/api/v1.0/HttpTrigger', {
                   method: 'GET',
-                  headers: {'content-type': 'application/json'
+                  headers: {'ocp-apim-subscription-key': 'e61d13780ee34ed89c7f6f2c552fcb8d',
+                            'content-type': 'application/json'
                     }
                 });
                 
