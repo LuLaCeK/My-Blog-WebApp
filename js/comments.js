@@ -16,6 +16,24 @@
             const commentText = commentInput.value.trim();
             errorMessage.textContent = '';
             
+    //reCapcthca
+    e.preventDefault();
+    
+    // Verify reCAPTCHA was checked
+    const response = grecaptcha.getResponse();
+    if(response.length === 0) {
+      alert("Please complete the reCAPTCHA!");
+      return;
+    }
+    
+    // If validated, proceed with form submission
+    console.log("reCAPTCHA verified, submitting form...");
+    
+    // You can submit via AJAX or regular form submission
+    // For AJAX:
+    const formData = new FormData(this);
+    formData.append('g-recaptcha-response', response);
+
             // Validate inputs
             if (!name) {
                 errorMessage.textContent = 'Please enter your name';
