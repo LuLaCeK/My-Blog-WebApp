@@ -1,14 +1,22 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f4f7f6;
-    margin: 0;
-    padding: 0;
+    /*margin: 0;
+    padding: 0;*/
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    /*justify-content: center;
+    align-items: center;*/
     color: #2c3e50;
 }
+@media screen and (min-width: 768px) {
+    body {
+    justify-content: center;
+    align-items: center;
+    }
+    
+}
+
 .container {
     max-width: 800px;
     background: #ffffff;
@@ -19,10 +27,10 @@ body {
     margin: 20px 0;
 }
 
-.container.comment-section {
+/*.container.comment-section {
     margin-top: 0;
     width: 100%;
-}
+}*/
 
 h1 {
     background-color: #3498db;

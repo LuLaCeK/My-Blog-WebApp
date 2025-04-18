@@ -7,7 +7,7 @@
     .container {
         max-width: 100%; /* Full width on mobile */
         padding: 10px; /* Less padding on mobile */
-        margin: 0;
+        margin: 10px;
     }
 
     h1 {
