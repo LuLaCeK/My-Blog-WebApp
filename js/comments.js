@@ -11,7 +11,7 @@
       
      
         // Submit a new comment
-        submitBtn.addEventListener('click', async () => {
+        submitBtn.addEventListener('click', async (e) => {
             const name = nameInput.value.trim();
             const commentText = commentInput.value.trim();
             errorMessage.textContent = '';
