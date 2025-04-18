@@ -18,18 +18,16 @@
             
     //reCapcthca
     e.preventDefault();
-    
-    // Verify reCAPTCHA was checked
-    const response = grecaptcha.getResponse();
-    if(response.length === 0) {
-      alert("Please complete the reCAPTCHA!");
-      return;
-    }
-    
+    grecaptcha.ready(function() {
+        // Your reCAPTCHA code here
+        const token = grecaptcha.getResponse();
+        if(token.length === 0) {
+          alert("Please complete the reCAPTCHA!");
+        }
     // If validated, proceed with form submission
     console.log("reCAPTCHA verified, submitting form...");
-    
-    // You can submit via AJAX or regular form submission
+
+            // You can submit via AJAX or regular form submission
     // For AJAX:
     const formData = new FormData(this);
     formData.append('g-recaptcha-response', response);
@@ -56,7 +54,7 @@
                     //timestamp: Date.now()
                 };
                 
-                const response = await fetch('https://myblog-test-apims-euw-01.azure-api.net/api/v1.0/HttpTrigger', {
+                const response = fetch('https://myblog-test-apims-euw-01.azure-api.net/api/v1.0/HttpTrigger', {
                   method: 'POST',
                   headers: {'ocp-apim-subscription-key': 'e61d13780ee34ed89c7f6f2c552fcb8d',
                             'content-type': 'application/json'
@@ -82,7 +80,9 @@
                 submitBtn.textContent = 'Post Comment';
             }
         });
-        
+
+      });
+                       
         // Fetch comments from CosmosDB using REST API
         async function fetchComments() {
             try {
