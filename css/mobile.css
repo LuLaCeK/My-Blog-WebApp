@@ -1,7 +1,7 @@
 /* Mobile Styles */
 @media (max-width: 992px)  {
     body {
-        font-size: 14px; /* Smaller font size for mobile */
+        font-size: 20px; /* Smaller font size for mobile */
     }
 
     .container {
