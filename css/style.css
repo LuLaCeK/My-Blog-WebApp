@@ -249,3 +249,10 @@ a:hover {
     color: #f44336;
     margin: 10px 0;
 }
+/* reCAPTCHA */
+.score-badge {
+    padding: 5px 10px;
+    background: #f0f0f0;
+    border-radius: 4px;
+    margin-left: 10px;
+}
