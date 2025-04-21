@@ -4,6 +4,10 @@ const commentInput = document.getElementById('comment-input');
 const submitBtn = document.getElementById('submit-comment');
 const errorMessage = document.getElementById('error-message');
 
+//Import functions from other modules
+import { fetchComments } from './getComments.js';
+
+
 // Submit a new comment
 export function setupCommentSubmission() {
     submitBtn.addEventListener('click', async () => {
@@ -52,6 +56,7 @@ export function setupCommentSubmission() {
             
             // Refresh comments immediately
             fetchComments();
+
         } catch (error) {
             console.error('Error adding comment:', error);
             errorMessage.textContent = 'Failed to post comment. Please try again.';
