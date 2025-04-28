@@ -2,7 +2,7 @@
   "routes": [
     {
       "route": "/api/*",
-      "rewrite": "https://<your-apim-name>.azure-api.net/api/:path",
+      "rewrite": "https://myblog-test-apims-euw-01.azure-api.net/api/v2.0/:path",
       "allowedRoles": ["authenticated"],
       "headers": {
         "Ocp-Apim-Subscription-Key": "e61d13780ee34ed89c7f6f2c552fcb8d"
