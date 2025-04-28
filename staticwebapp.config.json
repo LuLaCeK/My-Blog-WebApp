@@ -2,6 +2,9 @@
   "routes": [
     {
       "route": "/api/v2.0/*",
+      "methods": [
+        "get"
+      ],
       "rewrite": "https://myblog-test-apims-euw-01.azure-api.net/api/v2.0/:path",
       "allowedRoles": [
         "anonymous"
