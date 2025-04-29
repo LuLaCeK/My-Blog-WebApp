@@ -8,10 +8,10 @@ const loadingElement = document.getElementById('loading');
 // Fetch comments from CosmosDB using REST API
 export async function fetchComments() {
     try {
-        const response = await fetch('/api/v2.0/HttpTrigger', {
+        const response = await fetch('https;//api.go-mlb.cloud/api/v2.0/HttpTrigger', {
             method: 'GET',
             headers: {
-                //'ocp-apim-subscription-key': 'e61d13780ee34ed89c7f6f2c552fcb8d',
+                'ocp-apim-subscription-key': 'e61d13780ee34ed89c7f6f2c552fcb8d',
                 'content-type': 'application/json'
             }
         });
